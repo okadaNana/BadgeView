@@ -7,7 +7,12 @@ import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 
@@ -26,11 +31,19 @@ public class BadgeView extends TextView {
     }
 
     public BadgeView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
+        this(context, attrs, defStyleAttr, null);
     }
 
-    private void init() {
+    public BadgeView(Context context, AttributeSet attrs, int defStyleAttr, View target) {
+        super(context, attrs, defStyleAttr);
+        init(context, target);
+    }
+
+    public BadgeView(Context context, View target) {
+        this(context, null, android.R.attr.textViewStyle, target);
+    }
+
+    private void init(Context context, View target) {
         setDefaultTextColor();
         setDefaultPadding();
         getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -45,6 +58,23 @@ public class BadgeView extends TextView {
                 }
             }
         });
+
+        if (target != null) {
+            ViewGroup.LayoutParams lp = target.getLayoutParams();
+            ViewParent parent = target.getParent();
+            FrameLayout container = new FrameLayout(context);
+
+            ViewGroup group = (ViewGroup) parent;
+            int index = group.indexOfChild(target);
+
+            group.removeView(target);
+            group.addView(container, index, lp);
+            container.addView(target);
+            container.addView(this);
+            group.invalidate();
+        } else {
+            show();
+        }
     }
 
     private void setDefaultTextColor() {
@@ -74,7 +104,17 @@ public class BadgeView extends TextView {
         drawable.getPaint().setColor(DEFAULT_BADGE_COLOR);
 
         return drawable;
+    }
 
+    public void show() {
+        applyLayoutParams();
+    }
+
+    private void applyLayoutParams() {
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.END | Gravity.TOP;
+        setLayoutParams(lp);
     }
 
     private int dpToPix(int dp) {
