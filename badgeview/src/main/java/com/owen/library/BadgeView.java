@@ -60,6 +60,10 @@ public class BadgeView extends TextView {
         });
 
         if (target != null) {
+            // 1. remove BadgeView from it's Parent
+            // 2. replace by FrameLayout
+            // 3. add BadgeView to FrameLayout
+
             ViewGroup.LayoutParams lp = target.getLayoutParams();
             ViewParent parent = target.getParent();
             FrameLayout container = new FrameLayout(context);
